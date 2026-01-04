@@ -91,6 +91,14 @@
                 >
                   <i class="fas fa-link"></i> 合并
                 </button>
+                <button 
+                  class="ios-action-btn compress" 
+                  @click="pdfStore.openCompressModal"
+                  :disabled="!pdfStore.hasPages || pdfStore.replaceMode"
+                  data-tooltip="压缩PDF文件"
+                >
+                  <i class="fas fa-compress"></i> 压缩
+                </button>
               </div>
             </div>
           </div>
@@ -351,6 +359,61 @@
         </div>
       </div>
 
+      <!-- 压缩质量选择模态框 -->
+      <div v-if="pdfStore.showCompressModal" class="ios-modal" @click.self="pdfStore.closeCompressModal">
+        <div class="ios-modal-content">
+          <div class="ios-modal-header">
+            <div class="ios-modal-title">选择压缩质量</div>
+            <button class="ios-modal-close" @click="pdfStore.closeCompressModal">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="ios-modal-body">
+            <p>请选择PDF压缩的质量级别：</p>
+            <div class="quality-options">
+              <div 
+                class="quality-btn" 
+                :class="{ selected: pdfStore.compressQuality === 'high' }"
+                @click="pdfStore.selectCompressQuality('high')"
+              >
+                <i class="fas fa-file-pdf" style="color: #34C759"></i>
+                <span class="quality-label">高质量</span>
+                <span class="quality-value">轻度压缩</span>
+              </div>
+              <div 
+                class="quality-btn" 
+                :class="{ selected: pdfStore.compressQuality === 'medium' }"
+                @click="pdfStore.selectCompressQuality('medium')"
+              >
+                <i class="fas fa-file-pdf" style="color: #007AFF"></i>
+                <span class="quality-label">中等质量</span>
+                <span class="quality-value">平衡压缩</span>
+              </div>
+              <div 
+                class="quality-btn" 
+                :class="{ selected: pdfStore.compressQuality === 'low' }"
+                @click="pdfStore.selectCompressQuality('low')"
+              >
+                <i class="fas fa-file-pdf" style="color: #FF9500"></i>
+                <span class="quality-label">低质量</span>
+                <span class="quality-value">最大压缩</span>
+              </div>
+            </div>
+            <div style="text-align: center; color: #8E8E93; font-size: 12px; margin-top: 10px">
+              当前文档: <span style="font-weight: 700; color: #1C1C1E">{{ pdfStore.totalPages }} 页</span>
+            </div>
+          </div>
+          <div class="ios-modal-actions">
+            <button class="ios-btn ios-btn-secondary" @click="pdfStore.closeCompressModal">
+              <i class="fas fa-times"></i> 取消
+            </button>
+            <button class="ios-btn ios-btn-accent" @click="pdfStore.confirmCompressPDF">
+              <i class="fas fa-compress"></i> 开始压缩
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 加载状态 -->
       <div v-if="pdfStore.isLoading" class="ios-loading">
         <div class="ios-spinner"></div>
@@ -369,7 +432,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { usePDFStore } from './stores/pdfStore'
 
 const pdfStore = usePDFStore()
@@ -382,6 +445,13 @@ const showQualityModal = ref(false)
 const replaceModalText = ref('')
 const replacePreview = ref('')
 const currentConvertFileName = ref('')
+
+// 监听压缩模态框状态同步
+watch(() => pdfStore.showCompressModal, (newVal) => {
+  if (!newVal) {
+    // 模态框关闭时的清理逻辑
+  }
+})
 
 // 计算属性
 const statusText = computed(() => {
@@ -841,6 +911,17 @@ onMounted(() => {
     &:hover {
       background: rgba(52, 199, 89, 0.15);
       border-color: #34c75980;
+    }
+  }
+  
+  &.compress {
+    background: rgba(255, 20, 147, 0.1);
+    border-color: #ff14934d;
+    color: #ff1493;
+    
+    &:hover {
+      background: rgba(255, 20, 147, 0.15);
+      border-color: #ff149380;
     }
   }
 }
